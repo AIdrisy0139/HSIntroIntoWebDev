@@ -1,0 +1,446 @@
+  <!DOCTYPE HTML>
+<!-- Arik Idrisy -->
+<html onkeydown="newMoveShip(event, enterprise);">
+	<head>
+		<title>
+			No Win Scenario: Kobayashi Maru
+		</title>
+		<style>
+			td
+			{
+				border:thin solid black;
+			}
+			table
+			{
+				width:100%;
+			}
+			div.pic
+			{
+				position:fixed; 
+				top:0px ; 
+				left:0px;
+				z-index:-1
+			}
+
+			div.pic>img
+			{
+				position:fixed; 
+				top:0px;
+				left:0px; 
+				width:100%; 
+				height:100%
+			}
+			body
+			{
+				color:white;
+			}
+		</style>
+		<script>
+		MAXX=29;
+		MAXY=19;
+		MAX_HEALTH=10;
+		ALL_TARGETS_DESTROYED="ALL TARGETS DESTROYED, YOU HAVE WON THE NO WIN SCENARIO";
+		ENTERPRISE_DESTROYED="Enterprise Destroyed, simulation termininated";
+		MARU_DESTROYED="Kobayashi Maru destroyed, simulation terminated";
+		gameStatus="playing";
+		var grid = new Array();
+		function Ship(c, y, x)
+		{
+			this.xCoord = x;
+			this.yCoord = y;
+			this.character = c;
+			this.health=MAX_HEALTH;
+		}
+		
+		function generateGrid()
+		{
+			for (r = 0; r < 20; r++)
+			{
+				grid[r] = new Array();
+				trow = document.createElement("tr");
+				for (c = 0; c < 30; c++)
+				{
+					grid[r][c] = "*";
+					tcol = document.createElement("td");
+					trow.appendChild(tcol);
+					tcol.innerHTML = grid[r][c];
+					//tcol.setAttribute("onclick", moveShipVar);
+				}
+				gridTable.appendChild(trow);
+			}
+		}
+		
+		function initialize()
+		{
+			enterprise = new Ship("E", 10,5);
+			klinkOne= new Ship("K1", 15,15);
+			klinkTwo = new Ship("K2", 18,19);
+			klinkThree = new Ship("K3", 5,17)
+			maru = new Ship("M",10,17)
+			k1Div=document.getElementById("k1div");
+			k2Div=document.getElementById("k2div");
+			k3Div=document.getElementById("k3div");
+			messageBox=document.getElementById("message");
+			entHealthBox=document.getElementById("ehealth");
+			k1HealthBox=document.getElementById("k1health");
+			k2HealthBox=document.getElementById("k2health");
+			k3HealthBox=document.getElementById("k3health");
+		}
+		
+		/*function moveShip(ship, newYcoord, newXcoord)
+		{
+			ship.xCoord=newXcoord;
+			ship.yCoord=newYcoord;
+			display();
+		}*/
+		
+		function newMoveShip(E,ship)
+		{
+			//alert("Here");
+			buttonDisappear=false;
+			buttonDisplay();
+			if(E.which)
+			{
+				pressedKey=E.which;
+			}
+			else
+			{
+				pressedKey=E.keyCode;
+			}
+			if(pressedKey>40 || pressedKey<37)
+			{
+				return;
+			}
+			if(pressedKey==39)//RIGHT
+			{
+				ship.xCoord++;
+			}
+			if(pressedKey==37)//LEFT
+			{			
+				ship.xCoord--;
+			}
+			if(pressedKey==38)//UP
+			{
+				ship.yCoord--;
+			}
+			if(pressedKey==40)//DOWN
+			{
+				ship.yCoord++;
+			}
+			if(ship.xCoord<0)
+			{
+				ship.xCoord++;
+			}
+			if(ship.xCoord>MAXX)
+			{
+				ship.xCoord--;
+			}
+			if(ship.yCoord<0)
+			{
+				ship.yCoord++;
+			}
+			if(ship.yCoord>MAXY)
+			{
+				ship.yCoord--;
+			}
+			for(i=1;i<4;i++)
+			{
+				if(i==1)
+				{
+					Kship=klinkOne;
+					compPickDirection(Kship);
+					fireDisruptors(Kship);
+				}
+				if(i==2)
+				{
+					Kship=klinkTwo;
+					compPickDirection(Kship);
+					fireDisruptors(Kship);
+				}
+				if(i==3)
+				{
+					Kship=klinkThree;
+					compPickDirection(Kship);
+					fireDisruptors(Kship);
+				}
+			}
+			display();
+		}
+		
+		function firePhasers(targetedShip)
+		{
+			yEMinusT=parseInt(enterprise.yCoord-targetedShip.yCoord);
+			yTMinusE=parseInt(targetedShip.yCoord-enterprise.yCoord);
+			xEMinusT=parseInt(enterprise.xCoord-targetedShip.xCoord);
+			xTMinusE=parseInt(targetedShip.xCoord-enterprise.xCoord);
+			if(yEMinusT<=3 && yEMinusT>=0||yTMinusE<=3 && yTMinusE>=0)
+			{
+				if(xEMinusT<=3 && xEMinusT>=0||xTMinusE<=3 && xTMinusE>=0)
+				{
+					targetedShip.health--;
+				}
+			}
+			else
+			{
+				alert("Target out of Weapons Range");
+			}
+			checkHealth(targetedShip);
+			buttonDisappear=true;
+			buttonDisplay();
+		}
+			
+		function checkHealth(shipToBeChecked)
+		{
+			if(shipToBeChecked.health<=0)
+			{
+				alert("Target Ship Destroyed");
+				deleteImageANDbutton(shipToBeChecked);
+			}
+			checkWinStatus();
+		}
+		
+		function checkWinStatus()
+		{
+			if(klinkOne.health<=0 && klinkTwo.health<=0 && klinkThree.health<=0)
+			{
+				gameStatus=ALL_TARGETS_DESTROYED;
+			}
+			if(enterprise.health<=0)
+			{
+				gameStatus=ENTERPRISE_DESTROYED;
+			}
+			if(maru.health<=0)
+			{
+				gameStatus=MARU_DESTROYED;
+			}
+			endGameDisplay(gameStatus);
+			display();
+		}
+		
+
+		//***********COMPUTER FUNCTIONS***************
+		
+		
+		function compPickDirection(ship)
+		{
+			compDirection=parseInt((Math.random()*4)+37);
+			if(compDirection==39)//RIGHT
+			{
+				ship.xCoord++;
+			}
+			if(compDirection==37)//LEFT
+			{
+				ship.xCoord--;
+			}
+			if(compDirection==38)//UP
+			{
+				ship.yCoord--;
+			}
+			if(compDirection==40)//DOWN
+			{
+				ship.yCoord++;
+			}
+			if(ship.yCoord<0)
+			{
+				ship.yCoord++;
+			}
+			if(ship.yCoord>MAXY)
+			{
+				ship.yCoord--;
+			}
+			if(ship.xCoord>MAXX)
+			{
+				ship.xCoord--;
+			}
+			if(ship.yCoord<0)
+			{
+				ship.yCoord++;
+			}
+		}
+		
+		function fireDisruptors(ship)
+		{
+			yKMinusE=ship.yCoord-enterprise.yCoord;
+			yEMinusK=enterprise.ycoord-ship.yCoord;
+			xKMinusE=ship.xCoord-enterprise.xCoord;
+			xEMinusK=enterprise.xCoord-ship.xCoord;
+			if(yKMinusE<=3 && yKMinusE>=0 || yEMinusK<=3 && yEMinusK>=0)
+			{
+				if(xKMinusE<=3 && xKMinusE>=0 || xEMinusK<=3 && xEMinusK>=0)
+				{
+					enterprise.health--;
+				}
+			}
+			checkWinStatus();
+		}
+		//**********DISPLAY FUNCTIONS****************
+		
+		function buttonDisplay()
+		{
+			if(buttonDisappear==true)
+			{
+				k1Div.style.display="none";
+				k2Div.style.display="none";
+				k3Div.style.display="none";
+			}
+			if(buttonDisappear==false)
+			{
+				k1Div.style.display="block";
+				k2Div.style.display="block";
+				k3Div.style.display="block";
+			}
+		}
+		function deleteImageANDbutton(shipToBeDeleted)
+		{
+			if(shipToBeDeleted.character=="K1")
+			{
+				k1Div.style.display="none";
+			}
+			if(shipToBeDeleted.character=="K2")
+			{
+				k2Div.style.display="none";
+			}
+			if(shipToBeDeleted.character=="K3")
+			{
+				k3Div.style.display="none";
+			}
+			shipToBeDeleted.character="*";;
+			display();
+		}
+		
+		function endGameDisplay(currentGameState)
+		{
+			if(currentGameState==ALL_TARGETS_DESTROYED)
+			{
+				messageBox.innerHTML=ALL_TARGETS_DESTROYED;
+				gridTable.innerHTML="";
+				display();
+			}
+			if(currentGameState==ENTERPRISE_DESTROYED)
+			{
+				messageBox.innerHTML=ENTERPRISE_DESTROYED;
+				gridTable.innerHTML="";
+				display();
+			}
+			if(currentGameState==MARU_DESTROYED)
+			{
+				messageBox.innerHTML=MARU_DESTROYED;
+				gridTable.innerHTML="";
+				display();
+			}
+			display();
+		}
+		
+		function display()
+		{
+			for (r = 0; r < gridTable.rows.length; r++)
+			{
+				for (c = 0; c < gridTable.rows[r].cells.length; c++)
+				{
+					gridTable.rows[r].cells[c].innerHTML = "*";
+				}
+			}
+			gridTable.rows[enterprise.yCoord].cells[enterprise.xCoord].innerHTML = enterprise.character;
+			gridTable.rows[klinkOne.yCoord].cells[klinkOne.xCoord].innerHTML = klinkOne.character;
+			gridTable.rows[klinkTwo.yCoord].cells[klinkTwo.xCoord].innerHTML = klinkTwo.character;
+			gridTable.rows[klinkThree.yCoord].cells[klinkThree.xCoord].innerHTML = klinkThree.character;
+			gridTable.rows[maru.yCoord].cells[maru.xCoord].innerHTML = maru.character;
+			entHealthBox.innerHTML="Enterprise Health: " + enterprise.health;
+			k1HealthBox.innerHTML="Klingon Ship 1 Health: " +klinkOne.health;
+			k2HealthBox.innerHTML="Klingon Ship 2 Health: " +klinkTwo.health;
+			k3HealthBox.innerHTML="Klingon Ship 3 Health: " +klinkThree.health;
+		}
+		
+	
+		/*function initialDisplay(shipXcord,shipYcord)
+		{
+			for(i=0;i<cols.length;i++)
+			{
+				if(shipXcord==cols[c].xCoordinate && shipYcord==cols[c].yCoordinate)
+				{
+					cols[c].style.backgroundColor="blue";
+					alert("we here");
+				}
+			}
+		}
+		function initialPlacement()
+		{
+			enterprise.xCord=1;
+			enterprise.yCord=1;
+			initialDisplay(enterprise.xCord,enterprise.yCord);
+		}*
+		function setTds()
+		{
+			rows = document.getElementsByTagName("tr");
+			for (r = 0; r < rows.length; r++)
+			{
+				cols = rows[r].getElementsByTagName("td");
+				for (c = 0; c < cols.length; c++)
+				{
+					cols[c].xCoordinate = c;
+					cols[c].yCoordinate = r;
+				}
+			}
+		}
+		*/
+
+		</script>
+	</head>
+	
+	<body>
+		<div class="pic">
+			<img src="ST.jpg"/>
+		</div>
+		<table id="gridtable">
+		</table>
+		<div id="k1div">
+			<button onclick="firePhasers(klinkOne);">FIRE AT K1</button>
+		</div>
+		<div id="k2div">
+			<button onclick="firePhasers(klinkTwo);">FIRE AT K2</button>
+		</div>
+		<div id="k3div">
+			<button onclick="firePhasers(klinkThree);">FIRE AT K3</button>
+		</div>
+		<span id="message">
+		</span>
+		<br/>
+		<span id="ehealth">
+		</span>
+		<br/>
+		<span id="k1health">
+		</span>
+		<br/>
+		<span id="k2health">
+		</span>
+		<br/>
+		<span id="k3health">
+		</span>
+		<h2><a href="Intropage.html">How To Play</a><h2>
+	</body>
+	<script>
+	gridTable = document.getElementById("gridtable");
+	generateGrid();
+	initialize();
+	display();
+	//gridTable.addEventListener("click", moveShip(enterprise, 10 ,10))
+	//setTds();
+	//initialPlacement();
+	</script>
+</html>
+
+
+<!--
+
+	rows = document.getElementsByTagName("tr");
+	for (r = 0; r < rows.length; r++)
+	{
+		cols = rows[r].getElementsByTagName("td");
+		for (c = 0; c < cols.length; c++)
+		{
+			cols[c].xCoordinate = c;
+			cols[c].yCoordinate = r;
+		}
+	}
+
+-->
