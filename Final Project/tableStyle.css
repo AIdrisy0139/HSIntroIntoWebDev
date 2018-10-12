@@ -1,0 +1,21 @@
+div.tablecontainer
+{
+	text-align:center;
+	margin-right:auto;
+	margin-left:auto;
+}
+table
+{
+	background-color:#373737;
+}
+td
+{
+	border:inset;
+	border-color: darkgrey;
+}
+td.tableheaders
+{
+	colspan:1;
+}
+
+

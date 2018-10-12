@@ -1,0 +1,30 @@
+PHASE III
+-Added Enterprise to Choose Page
+-Created Template for Equip Dictionary and Weapons Dictionary
+-Made all Links white for visibility (anchor tag added to FP.css)
+-Created tableStyle.css for general tables, mainly the dictionary pages
+-Began adding sitewide navigation to all pages
+-Began crediting artists on the About/Credits Page
+-Renamed Link to index to match with new purpose of page(file name unchanged)
+-Updated Links on index to naviagte to now existing pages
+-Linked styling to about.html
+
+PHASE IV
+-Reformating of ABOUT.HTML is complete
+-Filled Shield Dict
+-Table for Users built
+-Table for Weapons built
+-Table for Shields built
+-Table for U_Ships built 
+-PHP intregration began in wep and shield dict  //weird error printing PHP code
+ 
+***********GOALS**************
+*Weapons Dict PHP ERROR
+-Complete U_Ships Table, all ship info or no? -- Foreign Key implementation?
+-Add Homepage link to navbar
+-Complete Choose Page
+-Start Building Defiant Hull Page
+-Obtain .png files for other Starships
+-UPDATE NAV BAR ON ALL PAGES AT END, KEEP INDEX NAV BAR UPTODATE
+
+
